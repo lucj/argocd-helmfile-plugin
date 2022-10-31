@@ -1,0 +1,5 @@
+repoServer:
+  extraContainers:
+  - name: plugin
+    image: lucj/argocd-plugin-helmfile:v0.0.1
+    # Need to mount age key (used by sops)

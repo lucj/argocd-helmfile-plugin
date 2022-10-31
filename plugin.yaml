@@ -1,0 +1,10 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ConfigManagementPlugin
+metadata:
+  name: helmfile-plugin
+spec:
+  version: v1.0
+  generate:
+    command: ["sh", "-c", "helmfile template --include-crds -q"]
+  discover:
+    fileName: "./helmfile.yaml"

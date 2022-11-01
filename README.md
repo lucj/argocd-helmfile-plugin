@@ -51,7 +51,7 @@ repoServer:
 
   extraContainers:
   - name: plugin
-    image: lucj/argocd-plugin-helmfile:v0.0.2
+    image: lucj/argocd-plugin-helmfile:v0.0.4
     command: ["/var/run/argocd/argocd-cmp-server"]
     securityContext:
       runAsNonRoot: true
@@ -64,7 +64,7 @@ repoServer:
       mountPath: "/app/config/age/"
 ```
 
-- also mount into this container the following 2 additional folders:
+- also mount into this container the following volumes (plugins + var-files)
 
 ```
 repoServer:
@@ -75,7 +75,7 @@ repoServer:
 
   extraContainers:
   - name: plugin
-    image: lucj/argocd-plugin-helmfile:v0.0.2
+    image: lucj/argocd-plugin-helmfile:v0.0.4
     command: ["/var/run/argocd/argocd-cmp-server"]
     securityContext:
       runAsNonRoot: true

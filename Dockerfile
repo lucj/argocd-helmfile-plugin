@@ -6,11 +6,14 @@ ARG HELM_VERSION="v3.10.1"
 ARG HELM_SECRETS_VERSION="4.1.1"
 ARG HELMFILE_VERSION="0.147.0" 
 
+RUN set -eux; \
+    groupadd --gid 999 argocd; \
+    useradd --uid 999 --gid argocd -m argocd;
+
 # Install couple of useful packages
 RUN apt-get update  --allow-insecure-repositories --allow-unauthenticated && \
     apt-get install -y \
     git \
-    vim \
     curl \
     gpg && \
     apt-get clean && \
@@ -37,10 +40,10 @@ RUN OS=$(uname | tr '[:upper:]' '[:lower:]') && \
     chmod +x /usr/local/bin/helm
 
 # Installing helm's helm-secrets plugin (this one is used by helmfile)
+USER 999
 RUN /usr/local/bin/helm.bin plugin install https://github.com/jkroepke/helm-secrets --version ${HELM_SECRETS_VERSION}
+ENV HELM_PLUGINS="/home/argocd/.local/share/helm/plugins/"
 
 # ArgoCD plugin definition
 WORKDIR /home/argocd/cmp-server/config/
 COPY plugin.yaml ./
-
-USER 999

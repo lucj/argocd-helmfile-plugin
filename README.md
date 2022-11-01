@@ -6,7 +6,13 @@ ArgoCD plugin allowing to handle applications defined with Helmfile
 
 ## Installation instruction
 
-Note: the following assumes argoCD has been installed using the helm chart available on [https://artifacthub.io/packages/helm/argo/argo-cd](https://artifacthub.io/packages/helm/argo/argo-cd)
+The following assumes argoCD has been installed using the helm chart available on [https://artifacthub.io/packages/helm/argo/argo-cd](https://artifacthub.io/packages/helm/argo/argo-cd)
+
+```
+helm repo add argo https://argoproj.github.io/argo-helm
+
+helm upgrade --install my-argo-cd argo/argo-cd --version 5.12.3
+```
 
 The binary needed for the plugin are currently packaged into a temporary image on the DockerHub: [https://hub.docker.com/r/lucj/argocd-plugin-helmfile/tags](https://hub.docker.com/r/lucj/argocd-plugin-helmfile/tags)
 
@@ -45,7 +51,8 @@ repoServer:
 
   extraContainers:
   - name: plugin
-    image: lucj/argocd-plugin-helmfile:v0.0.1
+    image: lucj/argocd-plugin-helmfile:v0.0.2
+    command: ["/var/run/argocd/argocd-cmp-server"]
     securityContext:
       runAsNonRoot: true
       runAsUser: 999
@@ -57,18 +64,52 @@ repoServer:
       mountPath: "/app/config/age/"
 ```
 
+- also mount into this container the following 2 additional folders:
+
+```
+repoServer:
+  volumes:
+    - name: age
+      secret:
+        secretName: age
+
+  extraContainers:
+  - name: plugin
+    image: lucj/argocd-plugin-helmfile:v0.0.2
+    command: ["/var/run/argocd/argocd-cmp-server"]
+    securityContext:
+      runAsNonRoot: true
+      runAsUser: 999
+    env:
+    - name: SOPS_AGE_KEY_FILE
+      value: /app/config/age/key.txt
+    volumeMounts:
+    - name: age
+      mountPath: "/app/config/age/"
+    - mountPath: /var/run/argocd
+      name: var-files
+    - mountPath: /home/argocd/cmp-server/plugins
+      name: plugins
+```
+
+
 - update argoCD using the updated values.yaml
+
+```
+helm upgrade --install my-argo-cd argo/argo-cd --version 5.12.3  -f values.yaml
+```
 
 ## Usage
 
-Definition of an application that should be managed via this plugin
+Create the following application resource. It defines the VotingApp, a sample microservice application:
 
 ```
+cat <<EOF | kubectl apply -f -
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: votingapp
-  namespace: argocd
+  namespace: argo
 spec:
   project: default
   source:
@@ -76,6 +117,14 @@ spec:
     targetRevision: master
     path: helm
     plugin: {}
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: vote
+  syncPolicy:
+    automated: {}
+    syncOptions:
+      - CreateNamespace=true
+EOF
 ```
 
 ## License

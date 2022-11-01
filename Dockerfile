@@ -44,4 +44,3 @@ WORKDIR /home/argocd/cmp-server/config/
 COPY plugin.yaml ./
 
 USER 999
-CMD ["/var/run/argocd/argocd-cmp-server"]

@@ -1,4 +1,4 @@
---- WIP: this has not been tested yet ---
+--- This is a work in progress ---
 
 ## Purpose
 

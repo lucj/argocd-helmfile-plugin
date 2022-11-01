@@ -42,3 +42,6 @@ RUN /usr/local/bin/helm.bin plugin install https://github.com/jkroepke/helm-secr
 # ArgoCD plugin definition
 WORKDIR /home/argocd/cmp-server/config/
 COPY plugin.yaml ./
+
+USER 999
+CMD ["/var/run/argocd/argocd-cmp-server"]

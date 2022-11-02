@@ -6,11 +6,17 @@ ArgoCD plugin allowing to handle applications defined with Helmfile
 
 ## Installation instruction
 
-### ArgoCD
+### Prerequisite
+
+In order to test this plugin, you only need a Kubernetes cluster. It can even be a local k3s cluster running on a multipass VM.
+
+### ArgoCD installation
 
 The following installs ArgoCD using the helm chart available on [https://artifacthub.io/packages/helm/argo/argo-cd](https://artifacthub.io/packages/helm/argo/argo-cd)
 
 - First option:
+
+Using the following helm commands:
 
 ```
 helm repo add argo https://argoproj.github.io/argo-helm
@@ -18,9 +24,9 @@ helm repo add argo https://argoproj.github.io/argo-helm
 helm upgrade --install --create-namespace -n argo argo-cd argo/argo-cd --version 5.12.3
 ```
 
-- Second option using helmfile
+- Second option:
 
-Using the following helmfile.yaml:
+Create the following helmfile.yaml:
 
 ```
 repositories:
@@ -34,6 +40,12 @@ releases:
       app: argo
     chart: argo/argo-cd
     version: ~5.12.3
+```
+
+then run the following command:
+
+```
+helmfile apply
 ```
 
 ### Helmfile plugin

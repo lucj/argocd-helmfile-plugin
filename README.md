@@ -6,19 +6,45 @@ ArgoCD plugin allowing to handle applications defined with Helmfile
 
 ## Installation instruction
 
-The following assumes argoCD has been installed using the helm chart available on [https://artifacthub.io/packages/helm/argo/argo-cd](https://artifacthub.io/packages/helm/argo/argo-cd)
+### ArgoCD
+
+The following installs ArgoCD using the helm chart available on [https://artifacthub.io/packages/helm/argo/argo-cd](https://artifacthub.io/packages/helm/argo/argo-cd)
+
+- First option:
 
 ```
 helm repo add argo https://argoproj.github.io/argo-helm
 
-helm upgrade --install my-argo-cd argo/argo-cd --version 5.12.3
+helm upgrade --install --create-namespace -n argo argo-cd argo/argo-cd --version 5.12.3
 ```
+
+- Second option using helmfile
+
+Using the following helmfile.yaml:
+
+```
+repositories:
+  - name: argo
+    url: https://argoproj.github.io/argo-helm
+
+releases:
+  - name: argo
+    namespace: argo
+    labels:
+      app: argo
+    chart: argo/argo-cd
+    version: ~5.12.3
+```
+
+### Helmfile plugin
 
 The binary needed for the plugin are currently packaged into a temporary image on the DockerHub: [https://hub.docker.com/r/lucj/argocd-plugin-helmfile/tags](https://hub.docker.com/r/lucj/argocd-plugin-helmfile/tags)
 
-Follow the steps below to make sure argoCD can use this plugin:
+Follow the steps below to make sure ArgoCD can use this plugin:
 
-- creation of a age.key to be used by sops so argoCD can decrypt secret
+- creation of a age.key
+
+We can use this one to encrypt secrets values that argo-cd will be able to decrypt.
 
 ```
 age-keygen > key.txt
@@ -30,7 +56,7 @@ age-keygen > key.txt
 kubectl -n argo create secret generic age --from-file=./key.txt
 ```
 
-- in the argoCD values.yaml, define an additional volume (containing this new secret) in the repo-server pod
+- in the values.yaml file of ArgoCD helm chart, define an additional volume (containing this new secret) in the repo-server pod
 
 ```
 repoServer:
@@ -40,7 +66,7 @@ repoServer:
         secretName: age
 ```
 
-- still in the argoCD values.yaml, define an extraContainer (sidecar container containing the plugin) and give it access to the age key
+- still in the values.yaml file, define an extraContainer (sidecar container containing the plugin) and give it access to the age key
 
 ```
 repoServer:
@@ -51,7 +77,7 @@ repoServer:
 
   extraContainers:
   - name: plugin
-    image: lucj/argocd-plugin-helmfile:v0.0.4
+    image: lucj/argocd-plugin-helmfile:v0.0.10
     command: ["/var/run/argocd/argocd-cmp-server"]
     securityContext:
       runAsNonRoot: true
@@ -93,10 +119,18 @@ repoServer:
 ```
 
 
-- update argoCD using the updated values.yaml
+- update ArgoCD so it takes into account the new values and then the new helmfile plugin
+
+The update can be done using the following command (if ArgoCD was installed directly with helm):
 
 ```
-helm upgrade --install my-argo-cd argo/argo-cd --version 5.12.3  -f values.yaml
+helm upgrade --install --create-namespace -n argo argo-cd argo/argo-cd --version 5.12.3 -f values.yaml
+```
+
+Or with this command (if ArgoCD was installed with Helmfile):
+
+```
+helmfile apply
 ```
 
 ## Usage
@@ -126,6 +160,8 @@ spec:
       - CreateNamespace=true
 EOF
 ```
+
+ArgoCD will automatically deploy this application using the helmfile plugin.
 
 ## License
 

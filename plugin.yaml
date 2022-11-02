@@ -5,6 +5,16 @@ metadata:
 spec:
   version: v1.0
   generate:
-    command: ["sh", "-c", "helmfile template --include-crds -q"]
+    command:
+      - bash
+      - "-c"
+      - |
+        if [[ -v ENV_NAME ]]; then
+          helmfile -e $ENV_NAME template --include-crds -q
+        elif [[ -v ARGOCD_ENV_ENV_NAME ]]; then
+          helmfile -e $ARGOCD_ENV_ENV_NAME template --include-crds -q
+        else
+          helmfile template --include-crds -q
+        fi
   discover:
     fileName: "./helmfile.yaml"

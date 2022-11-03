@@ -56,7 +56,8 @@ Follow the steps below to make sure ArgoCD can use this plugin:
 
 - creation of a age.key
 
-We can use this one to encrypt secrets values that argo-cd will be able to decrypt.
+As an admin we can use this key to encrypt yaml files containing sensitive values and commit them into git.
+ArgoCD will use this key to decrypt the secrets before it can install/update an application.
 
 ```
 age-keygen > key.txt
@@ -113,7 +114,7 @@ repoServer:
 
   extraContainers:
   - name: plugin
-    image: lucj/argocd-plugin-helmfile:v0.0.4
+    image: lucj/argocd-plugin-helmfile:v0.0.10
     command: ["/var/run/argocd/argocd-cmp-server"]
     securityContext:
       runAsNonRoot: true
@@ -156,6 +157,8 @@ kind: Application
 metadata:
   name: votingapp
   namespace: argo
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
 spec:
   project: default
   source:

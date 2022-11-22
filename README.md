@@ -1,16 +1,78 @@
---- This is a work in progress ---
-
 ## Purpose
 
-ArgoCD plugin allowing to handle applications defined with Helmfile
-
-## Installation instruction
+This plugin allows ArgoCD to manage applications defined using Helmfile
 
 ### Prerequisite
 
-In order to test this plugin, you only need a Kubernetes cluster. It can even be a local k3s cluster running on a multipass VM.
+In order to test this plugin you need a Kubernetes cluster (it can even be a local k3s cluster running on a multipass VM). Also, make sure you have:
+- Helm ([https://github.com/helm/helm/releases](https://github.com/helm/helm/releases))
+- helm-diff plugin ([https://github.com/databus23/helm-diff](https://github.com/databus23/helm-diff))
+- Helmfile ([https://github.com/helmfile/helmfile#installation](https://github.com/helmfile/helmfile#installation))
 
-### ArgoCD installation
+Ex: installation on Linux / amd64
+```
+# Helm
+curl -sSLO https://get.helm.sh/helm-v3.10.2-linux-amd64.tar.gz
+tar zxvf helm-v3.10.2-linux-amd64.tar.gz
+sudo mv ./linux-arm64/helm /usr/local/bin
+
+# Helm-diff
+helm plugin install https://github.com/databus23/helm-diff
+
+# Helmfile
+curl -sSLO https://github.com/helmfile/helmfile/releases/download/v0.148.1/helmfile_0.148.1_linux_amd64.tar.gz
+tar zxvf helmfile_0.148.1_darwin_amd64.tar.gz
+sudo mv ./hemlfile /usr/local/bin/
+```
+
+### Installation of ArgoCD + the helmfile plugin
+
+There are currently 2 installation options in this repo:
+- quick path to install ArgoCD and its Helmfile plugin in a quick way
+- detailed path to understand the installation steps and the setup of the Helmfile plugin
+
+#### Quick path
+
+Use the following command (make sure you have the prerequisites first). It defines ArgoCD + the helmfile plugin and deploy it in the cluster.
+
+```
+cat <<EOF > helmfile.yaml
+repositories:
+  - name: argo
+    url: https://argoproj.github.io/argo-helm
+
+releases:
+  - name: argo
+    namespace: argo
+    labels:
+      app: argo
+    chart: argo/argo-cd
+    version: ~5.14.1
+    values:
+    - repoServer:
+        extraContainers:
+        - name: plugin
+          image: lucj/argocd-plugin-helmfile:v0.0.10
+          command: ["/var/run/argocd/argocd-cmp-server"]
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 999
+          volumeMounts:
+          - mountPath: /var/run/argocd
+            name: var-files
+          - mountPath: /home/argocd/cmp-server/plugins
+            name: plugins
+EOF
+helmfile apply
+```
+
+Note: this quick path does not take into account the usage of a private key to encrypt sensitive properties in the values files. If you want to use such an encryption key please read the detailed path below.
+
+You can now go directly into the *Usage* step.
+
+#### Detailed path
+
+If you want to understand a little bit more what is happening under the hood, you can follow the following instructions to install and configure ArgoCD + the Helmfile plugin.
 
 The following installs ArgoCD using the helm chart available on [https://artifacthub.io/packages/helm/argo/argo-cd](https://artifacthub.io/packages/helm/argo/argo-cd)
 
@@ -56,8 +118,9 @@ Follow the steps below to make sure ArgoCD can use this plugin:
 
 - creation of a age.key
 
-As an admin we can use this key to encrypt yaml files containing sensitive values and commit them into git.
-ArgoCD will use this key to decrypt the secrets before it can install/update an application.
+This steps allows an admin to encrypt yaml files containing sensitive values and commit them into git. ArgoCD will use this key to decrypt the secrets before it can install/update an application.
+
+First make sure you have age installed ([https://github.com/FiloSottile/age](https://github.com/FiloSottile/age)), then create a key:  
 
 ```
 age-keygen > key.txt
@@ -131,7 +194,6 @@ repoServer:
       name: plugins
 ```
 
-
 - update ArgoCD so it takes into account the new values and then the new helmfile plugin
 
 The update can be done using the following command (if ArgoCD was installed directly with helm):
@@ -148,7 +210,7 @@ helmfile apply
 
 ## Usage
 
-Create the following application resource. It defines the VotingApp, a sample microservice application:
+Create the following ArgoCD Application resource which defines the VotingApp, a sample microservice application. ArgoCD will automatically deploy this application using the helmfile plugin.
 
 ```
 cat <<EOF | kubectl apply -f -
@@ -176,7 +238,22 @@ spec:
 EOF
 ```
 
-ArgoCD will automatically deploy this application using the helmfile plugin.
+ArgoCD web interface show the app deployed and in sync
+
+![ArgoCD](./images/argocd-votingapp1.png)
+
+![ArgoCD](./images/argocd-votingapp2.png)
+
+
+You will then be able to vote for your favorite pet and see the result. The Vote UI is available on port 31000 in your VM, result UI is available on port 31001.
+
+![Vote UI](./images/vote.png)
+
+![Result UI](./images/result.png)
+
+## Status
+
+This is currently a work in progress. Feel free to give it a try and provide feedback :)
 
 ## License
 

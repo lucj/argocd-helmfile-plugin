@@ -243,7 +243,9 @@ ArgoCD web interface show the app deployed and in sync
 ![ArgoCD](./images/argocd-votingapp2.png)
 
 
-You will then be able to vote for your favorite pet and see the result. The Vote UI is available on port 31000 in your VM, result UI is available on port 31001.
+You will then be able to vote for your favorite pet and see the result:
+- the vote UI is exposed as a NodePort service (available on port 31000)
+- the result UI is exposed as a NodePort service (available on port 31001)
 
 ![Vote UI](./images/vote.png)
 

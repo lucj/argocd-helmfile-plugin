@@ -28,12 +28,12 @@ sudo mv ./hemlfile /usr/local/bin/
 ## Installation of ArgoCD + the helmfile plugin
 
 There are currently 2 installation options in this repo:
-- quick path to install ArgoCD and its Helmfile plugin in a quick way
-- detailed path to understand the installation steps and the setup of the Helmfile plugin
+- a quick path to install ArgoCD and its Helmfile plugin in 2 commands
+- a detailed path to understand the installation steps
 
 ### Quick path
 
-Use the following command (make sure you have the prerequisites first). It defines ArgoCD + the helmfile plugin and deploy it in the cluster.
+Use the following command (make sure you have the prerequisites first) which creates a Helmfile defining ArgoCD + the helmfile plugin:
 
 ```
 cat <<EOF > helmfile.yaml
@@ -63,12 +63,17 @@ releases:
           - mountPath: /home/argocd/cmp-server/plugins
             name: plugins
 EOF
+```
+
+and deploy it into the cluster:
+
+```
 helmfile apply
 ```
 
 Note: this quick path does not take into account the usage of a private key to encrypt sensitive properties in the values files. If you want to use such an encryption key please read the detailed path below.
 
-You can now go directly into the *Usage* step.
+That's it, you can now go directly into the *Usage* step.
 
 ### Detailed path
 

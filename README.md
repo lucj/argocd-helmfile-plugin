@@ -2,7 +2,7 @@
 
 This plugin allows ArgoCD to manage applications defined using Helmfile
 
-### Prerequisite
+## Prerequisite
 
 In order to test this plugin you need a Kubernetes cluster (it can even be a local k3s cluster running on a multipass VM). Also, make sure you have:
 - Helm ([https://github.com/helm/helm/releases](https://github.com/helm/helm/releases))
@@ -25,13 +25,13 @@ tar zxvf helmfile_0.148.1_darwin_amd64.tar.gz
 sudo mv ./hemlfile /usr/local/bin/
 ```
 
-### Installation of ArgoCD + the helmfile plugin
+## Installation of ArgoCD + the helmfile plugin
 
 There are currently 2 installation options in this repo:
 - quick path to install ArgoCD and its Helmfile plugin in a quick way
 - detailed path to understand the installation steps and the setup of the Helmfile plugin
 
-#### Quick path
+### Quick path
 
 Use the following command (make sure you have the prerequisites first). It defines ArgoCD + the helmfile plugin and deploy it in the cluster.
 
@@ -70,7 +70,7 @@ Note: this quick path does not take into account the usage of a private key to e
 
 You can now go directly into the *Usage* step.
 
-#### Detailed path
+### Detailed path
 
 If you want to understand a little bit more what is happening under the hood, you can follow the following instructions to install and configure ArgoCD + the Helmfile plugin.
 
@@ -83,7 +83,7 @@ Using the following helm commands:
 ```
 helm repo add argo https://argoproj.github.io/argo-helm
 
-helm upgrade --install --create-namespace -n argo argo-cd argo/argo-cd --version 5.12.3
+helm upgrade --install --create-namespace -n argo argo-cd argo/argo-cd --version 5.14.1
 ```
 
 - Second option:
@@ -101,7 +101,7 @@ releases:
     labels:
       app: argo
     chart: argo/argo-cd
-    version: ~5.12.3
+    version: ~5.14.1
 ```
 
 then run the following command:
@@ -110,9 +110,7 @@ then run the following command:
 helmfile apply
 ```
 
-### Helmfile plugin
-
-The binary needed for the plugin are currently packaged into a temporary image on the DockerHub: [https://hub.docker.com/r/lucj/argocd-plugin-helmfile/tags](https://hub.docker.com/r/lucj/argocd-plugin-helmfile/tags)
+Once ArgoCD is installed, we need to enable the Helmfile plugin. The binaries needed for the plugin are currently packaged into the following image in the DockerHub: [https://hub.docker.com/r/lucj/argocd-plugin-helmfile/tags](https://hub.docker.com/r/lucj/argocd-plugin-helmfile/tags)
 
 Follow the steps below to make sure ArgoCD can use this plugin:
 

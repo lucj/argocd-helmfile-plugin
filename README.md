@@ -25,7 +25,7 @@ helm plugin install https://github.com/databus23/helm-diff
 # Helmfile
 curl -sSLO https://github.com/helmfile/helmfile/releases/download/v0.148.1/helmfile_0.148.1_$OS_$ARCH.tar.gz
 tar zxvf helmfile_0.148.1_$OS_$ARCH.tar.gz
-sudo mv ./hemlfile /usr/local/bin/
+sudo mv ./helmfile /usr/local/bin/
 ```
 
 ## Installation of ArgoCD + the helmfile plugin

@@ -11,17 +11,20 @@ In order to test this plugin you need a Kubernetes cluster (it can even be a loc
 
 Ex: installation on Linux / amd64
 ```
+OS=linux     # change to match your current os (linux / darwin)
+ARCH=amd64   # change to match your current architecture (amd64 / arm64)
+
 # Helm
-curl -sSLO https://get.helm.sh/helm-v3.10.2-linux-amd64.tar.gz
-tar zxvf helm-v3.10.2-linux-amd64.tar.gz
-sudo mv ./linux-arm64/helm /usr/local/bin
+curl -sSLO https://get.helm.sh/helm-v3.10.2-$OS-$ARCH.tar.gz
+tar zxvf helm-v3.10.2-$OS-$ARCH.tar.gz
+sudo mv ./$OS-$ARCH/helm /usr/local/bin
 
 # Helm-diff
 helm plugin install https://github.com/databus23/helm-diff
 
 # Helmfile
-curl -sSLO https://github.com/helmfile/helmfile/releases/download/v0.148.1/helmfile_0.148.1_linux_amd64.tar.gz
-tar zxvf helmfile_0.148.1_darwin_amd64.tar.gz
+curl -sSLO https://github.com/helmfile/helmfile/releases/download/v0.148.1/helmfile_0.148.1_$OS_$ARCH.tar.gz
+tar zxvf helmfile_0.148.1_$OS_$ARCH.tar.gz
 sudo mv ./hemlfile /usr/local/bin/
 ```
 

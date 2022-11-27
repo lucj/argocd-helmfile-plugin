@@ -250,7 +250,6 @@ ArgoCD web interface show the app deployed and in sync
 
 ![ArgoCD](./images/argocd-votingapp2.png)
 
-
 You will then be able to vote for your favorite pet and see the result:
 - the vote UI is exposed as a NodePort service (available on port 31000)
 - the result UI is exposed as a NodePort service (available on port 31001)
@@ -258,6 +257,96 @@ You will then be able to vote for your favorite pet and see the result:
 ![Vote UI](./images/vote.png)
 
 ![Result UI](./images/result.png)
+
+## About secret encryption
+
+If you installed ArgoCD and its helmfile plugin using the detailed path above you got a *key.txt* age key created at the same time. [age](https://github.com/FiloSottile/age) is one the encryption methods that can be used by [SOPS](https://github.com/mozilla/sops) to encrypt/decrypt environment values. As Helmfile knows how to use SOPS we can provide the age key to the ArgoCD helmfile plugin. Doing so we can reference encrypted values in the Helmfile definition of an application and let the plugin decrypt data when it needs to do so.
+
+Let's consider a simple example: we have an application which needs to be provided the password to connect to a Postgres database. As we do not want this password to be in plain tewt in the values file, we will encrypt it first and then use the encrypted version in the Helmfile definition of the application. Let's detail those 2 steps:
+
+Note: for this example, we use a dummy age key with the following content:
+```
+# created: 2022-11-01T10:06:45+01:00
+# public key: age1px36dnru88xffdnejh2ps0grsz9cygx05f8wa8ly47duxm7lyq4ql3rxcm
+AGE-SECRET-KEY-1U3TRUW0NMRKH348F2870AYRYTDZZ4VD759GCXKC3MCWJRCG0N7JQXZ0L8F
+```
+
+- data encryption
+
+First we need to install SOPS binary on our local machine. It can be downloaded from [https://github.com/mozilla/sops/releases](https://github.com/mozilla/sops/releases).
+
+Next let's consider the following *secrets.yaml* containing the password needed by the application:
+
+```
+# secrets.yaml
+postgres:
+  password: my_password
+```
+
+In order to store this file in a more secure way we can encrypt it with SOPS using the age key created above:
+
+```
+# Provide SOPS the path towards the age key
+export SOPS_AGE_KEY_FILE=$PWD/key.txt
+
+# Provide SOPS a list of public keys which will be able to decrypt the data (only the current key here but additional ones could be added)
+SOPS_AGE_RECIPIENTS=age1px36dnru88xffdnejh2ps0grsz9cygx05f8wa8ly47duxm7lyq4ql3rxcm
+
+# Encrypt the secrets.yaml file
+sops encrypt secrets.yaml
+```
+
+Once encrypted the content of the *secrets.yaml* file is modified as follows:
+
+```
+$ cat secrets.yaml
+postgres:
+    password: ENC[AES256_GCM,data:VsgiSvbMxg6fVj0=,iv:6Umsg2X5bRL8NE6npmqiSKPOht9Lp4JzBxbBGRVYLRA=,tag:KCzMX3eeQcSwOSC9k7umxQ==,type:str]
+sops:
+    kms: []
+    gcp_kms: []
+    azure_kv: []
+    hc_vault: []
+    age:
+        - recipient: age1px36dnru88xffdnejh2ps0grsz9cygx05f8wa8ly47duxm7lyq4ql3rxcm
+          enc: |
+            -----BEGIN AGE ENCRYPTED FILE-----
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBlSVdhSE9VWEM2QVZsVndt
+            YlFmMTRqRVlpcVYrVStnb0tUVGZWdDFCRHpVCm9oWW02TDk1ZktMUXB5T1I3aGtJ
+            aURDMldGUGtkeGRSbVF6MzRQWHV2UjQKLS0tIFpBdllOTWk2K0U1UnF1bmExTkt3
+            WHdUWGs2dnZwdGZhQmw0aXlBUkNOQUkKz2qlK3EgIZ6CyJNoJEVutSsDIsTFPpgi
+            Rs0gKpCFW39EzIXHPov6GsnztiNmYv9lVUlbDHGumsA5Ezr0axv0aw==
+            -----END AGE ENCRYPTED FILE-----
+    lastmodified: "2022-11-27T14:25:50Z"
+    mac: ENC[AES256_GCM,data:TbNaZ8g7yxjXzMcnYbPKpK1ukg8wDXBk6AhxqFWqJkemwPAjuUxKyQoUO08xQ4wvZyQuPWDYOehHW18usuL3LGJt0yhJOnyKdZY8o0kU0AniYp+KfrhAlwuZ5vfWTbBLbrC7P2+1u/2L/clSH1I8J8zk9hVXMAnlt/QYi0HGr48=,iv:JSW1MO5kWC4N+Snc/+q7cnM04PCAl6bwV7hgETyslgs=,tag:tidkPm6eZoKYP98wYNrmFQ==,type:str]
+    pgp: []
+    unencrypted_suffix: _unencrypted
+    version: 3.7.3
+```
+
+The *postgres.password* value is now encrypted and can only be decrypted using the public key provided in the *SOPS_AGE_RECIPIENTS* environment variable.
+
+- helmfile
+
+We can now reference the *secrets.yaml* file in the Helmfile definition of an application as follows:
+
+Note: Helmfile tries to decrypt the content of properties in files defined under the *secrets* property of a release
+
+```
+releases:
+  - name: myapp
+    namespace: myapp
+    chart: .
+    version: ~0.0.1
+    values:
+      - values.yaml  <- Helmfile considers plain text valued are provided
+    secrets:
+      - secrets.yaml <- Helmfile considers encrypted values are provided
+```
+
+As the age key is given to the ArgoCD's helmfile plugin, each time the above application needs to be deployed / updated the plugin will be able to use this key to decrypt the properties first.
+
+Note: *age* is one of the encryption method that is supported by SOPS (and thus by Helmfile). Other encryption methods exist but they are not taken into account in this plugin.
 
 ## Status
 

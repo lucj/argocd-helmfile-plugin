@@ -260,7 +260,7 @@ You will then be able to vote for your favorite pet and see the result:
 
 ## About secret encryption
 
-If you installed ArgoCD and its helmfile plugin using the detailed path above you got a *key.txt* age key created at the same time. [age](https://github.com/FiloSottile/age) is one the encryption methods that can be used by [SOPS](https://github.com/mozilla/sops) to encrypt/decrypt environment values. As Helmfile knows how to use SOPS we can provide the age key to the ArgoCD helmfile plugin. Doing so we can reference encrypted values in the Helmfile definition of an application and let the plugin decrypt data when it needs to do so.
+If you installed ArgoCD and its helmfile plugin using the detailed path above you also created a *key.txt* age key. [age](https://github.com/FiloSottile/age) is one the encryption methods that can be used by [SOPS](https://github.com/mozilla/sops) to encrypt/decrypt environment values. As Helmfile knows how to use SOPS we can provide the age key to the ArgoCD helmfile plugin. Doing so we can reference encrypted values in the Helmfile definition of an application and let the plugin decrypt data when it needs to do so.
 
 Let's consider a simple example: we have an application which needs to be provided the password to connect to a Postgres database. As we do not want this password to be in plain tewt in the values file, we will encrypt it first and then use the encrypted version in the Helmfile definition of the application. Let's detail those 2 steps:
 

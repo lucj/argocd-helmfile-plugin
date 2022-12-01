@@ -8,6 +8,9 @@ In order to test this plugin you need a Kubernetes cluster (it can even be a loc
 - Helm ([https://github.com/helm/helm/releases](https://github.com/helm/helm/releases))
 - helm-diff plugin ([https://github.com/databus23/helm-diff](https://github.com/databus23/helm-diff))
 - Helmfile ([https://github.com/helmfile/helmfile#installation](https://github.com/helmfile/helmfile#installation))
+- age ([https://github.com/FiloSottile/age](https://github.com/FiloSottile/age))
+
+Note: the installation of *age* is not really a requirement but this will be useful if you need to encrypt data in values file. 
 
 Ex: installation on Linux / amd64
 ```
@@ -23,20 +26,28 @@ sudo mv ./$OS-$ARCH/helm /usr/local/bin
 helm plugin install https://github.com/databus23/helm-diff
 
 # Helmfile
-curl -sSLO https://github.com/helmfile/helmfile/releases/download/v0.148.1/helmfile_0.148.1_$OS_$ARCH.tar.gz
-tar zxvf helmfile_0.148.1_$OS_$ARCH.tar.gz
+curl -sSLO https://github.com/helmfile/helmfile/releases/download/v0.148.1/helmfile_0.148.1_${OS}_$ARCH.tar.gz
+tar zxvf helmfile_0.148.1_${OS}_$ARCH.tar.gz
 sudo mv ./helmfile /usr/local/bin/
+
+# Age
+curl -sSLO https://github.com/FiloSottile/age/releases/download/v1.0.0/age-v1.0.0-$OS-$ARCH.tar.gz
+tar zxvf age-v1.0.0-$OS-$ARCH.tar.gz
+sudo mv ./age/age /usr/local/bin/
+sudo mv ./age/age-keygen /usr/local/bin/
 ```
 
 ## Installation of ArgoCD + the helmfile plugin
 
 There are currently 2 installation options in this repo:
-- a quick path to install ArgoCD and its Helmfile plugin in 2 commands
+- a quick path to install ArgoCD and its Helmfile plugin
 - a detailed path to understand the installation steps
 
 ### Quick path
 
-Use the following command (make sure you have the prerequisites first) which creates a Helmfile defining ArgoCD + the helmfile plugin:
+- without age key file:
+
+If you do not want to use a private key to encrypt sensitive properties in the values files you can use the following command  which installs ArgoCD + the helmfile plugin using Helmfile:
 
 ```
 cat <<EOF > helmfile.yaml
@@ -74,13 +85,26 @@ and deploy it into the cluster:
 helmfile apply
 ```
 
-Note: this quick path does not take into account the usage of a private key to encrypt sensitive properties in the values files. If you want to use such an encryption key please read the detailed path below.
+- with an age key file
+
+If you want to use a private key to encrypt sensitive properties in the values files you can install ArgoCD from the *installation* folder:
+
+```
+# Clone the repo
+git clone https://github.com/lucj/argocd-helmfile-plugin
+
+# Go into the installation folder
+cd argocd-helmfile-plugin/installation/
+
+# Install the whole thing
+helmfile apply
+```
 
 That's it, you can now go directly into the *Usage* step.
 
 ### Detailed path
 
-If you want to understand a little bit more what is happening under the hood, you can follow the following instructions to install and configure ArgoCD + the Helmfile plugin.
+If you want to understand a little bit more what is happening under the hood, you can follow the following instructions to install and configure ArgoCD + the Helmfile plugin manually.
 
 The following installs ArgoCD using the helm chart available on [https://artifacthub.io/packages/helm/argo/argo-cd](https://artifacthub.io/packages/helm/argo/argo-cd)
 

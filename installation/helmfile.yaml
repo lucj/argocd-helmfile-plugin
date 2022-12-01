@@ -1,0 +1,43 @@
+repositories:
+  - name: argo
+    url: https://argoproj.github.io/argo-helm
+
+releases:
+  - name: argo
+    namespace: argo
+    labels:
+      app: argo
+    chart: argo/argo-cd
+    version: ~5.14.1
+    values:
+      - repoServer:
+          volumes:
+            - name: age
+              secret:
+                secretName: age
+          extraContainers:
+          - name: plugin
+            image: lucj/argocd-plugin-helmfile:v0.0.10
+            command: ["/var/run/argocd/argocd-cmp-server"]
+            securityContext:
+              runAsNonRoot: true
+              runAsUser: 999
+            env:
+            - name: SOPS_AGE_KEY_FILE
+              value: /app/config/age/key.txt
+            volumeMounts:
+            - name: age
+              mountPath: "/app/config/age/"
+            - mountPath: /var/run/argocd
+              name: var-files
+            - mountPath: /home/argocd/cmp-server/plugins
+              name: plugins
+    hooks:
+    - events:
+      - presync
+      showlogs: true
+      command: "./bin/create-secret.sh"
+    - events:
+      - postuninstall
+      showlogs: true
+      command: "./bin/delete-secret.sh"

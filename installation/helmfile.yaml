@@ -3,10 +3,10 @@ repositories:
     url: https://argoproj.github.io/argo-helm
 
 releases:
-  - name: argo
-    namespace: argo
+  - name: argocd
+    namespace: argocd
     labels:
-      app: argo
+      app: argocd
     chart: argo/argo-cd
     version: ~5.14.1
     values:

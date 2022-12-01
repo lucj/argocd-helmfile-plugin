@@ -57,10 +57,10 @@ repositories:
     url: https://argoproj.github.io/argo-helm
 
 releases:
-  - name: argo
-    namespace: argo
+  - name: argocd
+    namespace: argocd
     labels:
-      app: argo
+      app: argocd
     chart: argo/argo-cd
     version: ~5.14.1
     values:
@@ -116,7 +116,7 @@ Using the following helm commands:
 ```sh
 helm repo add argo https://argoproj.github.io/argo-helm
 
-helm upgrade --install --create-namespace -n argo argo-cd argo/argo-cd --version 5.14.1
+helm upgrade --install --create-namespace -n argocd argo-cd argo/argo-cd --version 5.14.1
 ```
 
 - Second option:
@@ -129,10 +129,10 @@ repositories:
     url: https://argoproj.github.io/argo-helm
 
 releases:
-  - name: argo
-    namespace: argo
+  - name: argocd
+    namespace: argocd
     labels:
-      app: argo
+      app: argocd
     chart: argo/argo-cd
     version: ~5.14.1
 ```
@@ -160,7 +160,7 @@ age-keygen > key.txt
 - create a secret from this key
 
 ```sh
-kubectl -n argo create secret generic age --from-file=./key.txt
+kubectl -n argocd create secret generic age --from-file=./key.txt
 ```
 
 - in the values.yaml file of ArgoCD helm chart, define an additional volume (containing this new secret) in the repo-server pod
@@ -230,7 +230,7 @@ repoServer:
 The update can be done using the following command (if Argo CD was installed directly with helm):
 
 ```
-helm upgrade --install --create-namespace -n argo argo-cd argo/argo-cd --version 5.12.3 -f values.yaml
+helm upgrade --install --create-namespace -n argocd argo-cd argo/argo-cd --version 5.12.3 -f values.yaml
 ```
 
 Or with this command (if Argo CD was installed with Helmfile):
@@ -249,7 +249,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: votingapp
-  namespace: argo
+  namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:

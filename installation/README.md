@@ -7,7 +7,7 @@ kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.pas
 Next port-forward the frontend service:
 
 ```
-kubectl -n argocd port-forward service/argo-argocd-server 8080:443
+kubectl -n argocd port-forward service/argocd-server 8080:443
 ```
 
 Then open the browser on http://localhost:8080 and accept the certificate

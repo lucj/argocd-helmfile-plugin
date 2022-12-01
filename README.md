@@ -1,6 +1,6 @@
 ## Purpose
 
-This plugin allows ArgoCD to manage applications defined using Helmfile
+This plugin allows [Argo CD](https://github.com/argoproj/argo-cd) to manage applications defined using [Helmfile](https://github.com/helmfile/helmfile).
 
 ## Prerequisite
 
@@ -10,10 +10,11 @@ In order to test this plugin you need a Kubernetes cluster (it can even be a loc
 - Helmfile ([https://github.com/helmfile/helmfile#installation](https://github.com/helmfile/helmfile#installation))
 - age ([https://github.com/FiloSottile/age](https://github.com/FiloSottile/age))
 
-Note: the installation of *age* is not really a requirement but this will be useful if you need to encrypt data in values file. 
+Note: the installation of `age` is not really a requirement but this will be useful if you need to encrypt data in values files. 
 
 Ex: installation on Linux / amd64
-```
+
+```sh
 OS=linux     # change to match your current os (linux / darwin)
 ARCH=amd64   # change to match your current architecture (amd64 / arm64)
 
@@ -37,15 +38,15 @@ sudo mv ./age/age /usr/local/bin/
 sudo mv ./age/age-keygen /usr/local/bin/
 ```
 
-## Installation of ArgoCD + the helmfile plugin
+## Installation of Argo CD + the helmfile plugin
 
 There are currently 2 installation options in this repo:
-- a quick path to install ArgoCD and its Helmfile plugin
+- a quick path to install Argo CD and its Helmfile plugin
 - a detailed path to understand the installation steps
 
 ### Quick path
 
-- without age key file:
+#### Without `age` key file
 
 If you do not want to use a private key to encrypt sensitive properties in the values files you can use the following command  which installs ArgoCD + the helmfile plugin using Helmfile:
 
@@ -81,13 +82,13 @@ EOF
 
 and deploy it into the cluster:
 
-```
+```sh
 helmfile apply
 ```
 
-- with an age key file
+#### With an `age` key file
 
-If you want to use a private key to encrypt sensitive properties in the values files you can install ArgoCD from the *installation* folder:
+If you want to use a private key to encrypt sensitive properties in the values files you can install Argo CD from the [*installation*](./installation) folder:
 
 ```
 # Clone the repo
@@ -100,19 +101,19 @@ cd argocd-helmfile-plugin/installation/
 helmfile apply
 ```
 
-That's it, you can now go directly into the *Usage* step.
+That's it, you can now go directly into the [*Usage*](#usage) step.
 
 ### Detailed path
 
-If you want to understand a little bit more what is happening under the hood, you can follow the following instructions to install and configure ArgoCD + the Helmfile plugin manually.
+If you want to understand a little bit more what is happening under the hood, you can follow the following instructions to install and configure Argo CD + the Helmfile plugin manually.
 
-The following installs ArgoCD using the helm chart available on [https://artifacthub.io/packages/helm/argo/argo-cd](https://artifacthub.io/packages/helm/argo/argo-cd)
+The following installs Argo CD using the helm chart available on [https://artifacthub.io/packages/helm/argo/argo-cd](https://artifacthub.io/packages/helm/argo/argo-cd)
 
 - First option:
 
 Using the following helm commands:
 
-```
+```sh
 helm repo add argo https://argoproj.github.io/argo-helm
 
 helm upgrade --install --create-namespace -n argo argo-cd argo/argo-cd --version 5.14.1
@@ -122,7 +123,7 @@ helm upgrade --install --create-namespace -n argo argo-cd argo/argo-cd --version
 
 Create the following helmfile.yaml:
 
-```
+```sh
 repositories:
   - name: argo
     url: https://argoproj.github.io/argo-helm
@@ -138,33 +139,33 @@ releases:
 
 then run the following command:
 
-```
+```sh
 helmfile apply
 ```
 
-Once ArgoCD is installed, we need to enable the Helmfile plugin. The binaries needed for the plugin are currently packaged into the following image in the DockerHub: [https://hub.docker.com/r/lucj/argocd-plugin-helmfile/tags](https://hub.docker.com/r/lucj/argocd-plugin-helmfile/tags)
+Once Argo CD is installed, we need to enable the Helmfile plugin. The binaries needed for the plugin are currently packaged into the following image in the DockerHub: [https://hub.docker.com/r/lucj/argocd-plugin-helmfile/tags](https://hub.docker.com/r/lucj/argocd-plugin-helmfile/tags)
 
 Follow the steps below to make sure ArgoCD can use this plugin:
 
 - creation of a age.key
 
-This steps allows an admin to encrypt yaml files containing sensitive values and commit them into git. ArgoCD will use this key to decrypt the secrets before it can install/update an application.
+This steps allows an admin to encrypt yaml files containing sensitive values and commit them into git. Argo CD will use this key to decrypt the secrets before it can install/update an application.
 
 First make sure you have age installed ([https://github.com/FiloSottile/age](https://github.com/FiloSottile/age)), then create a key:  
 
-```
+```sh
 age-keygen > key.txt
 ```
 
 - create a secret from this key
 
-```
+```sh
 kubectl -n argo create secret generic age --from-file=./key.txt
 ```
 
 - in the values.yaml file of ArgoCD helm chart, define an additional volume (containing this new secret) in the repo-server pod
 
-```
+```yaml
 repoServer:
   volumes:
     - name: age
@@ -174,7 +175,7 @@ repoServer:
 
 - still in the values.yaml file, define an extraContainer (sidecar container containing the plugin) and give it access to the age key
 
-```
+```yaml
 repoServer:
   volumes:
     - name: age
@@ -198,7 +199,7 @@ repoServer:
 
 - also mount into this container the following volumes (plugins + var-files)
 
-```
+```yaml
 repoServer:
   volumes:
     - name: age
@@ -224,15 +225,15 @@ repoServer:
       name: plugins
 ```
 
-- update ArgoCD so it takes into account the new values and then the new helmfile plugin
+- update Argo CD so it takes into account the new values and then the new helmfile plugin
 
-The update can be done using the following command (if ArgoCD was installed directly with helm):
+The update can be done using the following command (if Argo CD was installed directly with helm):
 
 ```
 helm upgrade --install --create-namespace -n argo argo-cd argo/argo-cd --version 5.12.3 -f values.yaml
 ```
 
-Or with this command (if ArgoCD was installed with Helmfile):
+Or with this command (if Argo CD was installed with Helmfile):
 
 ```
 helmfile apply
@@ -240,7 +241,7 @@ helmfile apply
 
 ## Usage
 
-Create the following ArgoCD Application resource which defines the VotingApp, a sample microservice application. ArgoCD will automatically deploy this application using the helmfile plugin.
+Create the following Argo CD Application resource which defines the VotingApp, a sample microservice application. Argo CD will automatically deploy this application using the helmfile plugin.
 
 ```
 cat <<EOF | kubectl apply -f -
@@ -268,7 +269,7 @@ spec:
 EOF
 ```
 
-ArgoCD web interface show the app deployed and in sync
+Argo CD web interface show the app deployed and in sync
 
 ![ArgoCD](./images/argocd-votingapp1.png)
 
@@ -284,7 +285,7 @@ You will then be able to vote for your favorite pet and see the result:
 
 ## About secret encryption
 
-If you installed ArgoCD and its helmfile plugin using the detailed path above you also created a *key.txt* age key. [age](https://github.com/FiloSottile/age) is one the encryption methods that can be used by [SOPS](https://github.com/mozilla/sops) to encrypt/decrypt environment values. As Helmfile knows how to use SOPS we can provide the age key to the ArgoCD helmfile plugin. Doing so we can reference encrypted values in the Helmfile definition of an application and let the plugin decrypt data when it needs to do so.
+If you installed Argo CD and its helmfile plugin using the detailed path above you also created a *key.txt* age key. [age](https://github.com/FiloSottile/age) is one the encryption methods that can be used by [SOPS](https://github.com/mozilla/sops) to encrypt/decrypt environment values. As Helmfile knows how to use SOPS we can provide the age key to the Argo CD helmfile plugin. Doing so we can reference encrypted values in the Helmfile definition of an application and let the plugin decrypt data when it needs to do so.
 
 Let's consider a simple example: we have an application which needs to be provided the password to connect to a Postgres database. As we do not want this password to be in plain tewt in the values file, we will encrypt it first and then use the encrypted version in the Helmfile definition of the application. Let's detail those 2 steps:
 
@@ -301,7 +302,7 @@ First we need to install SOPS binary on our local machine. It can be downloaded 
 
 Next let's consider the following *secrets.yaml* containing the password needed by the application:
 
-```
+```yaml
 # secrets.yaml
 postgres:
   password: my_password
@@ -309,7 +310,7 @@ postgres:
 
 In order to store this file in a more secure way we can encrypt it with SOPS using the age key created above:
 
-```
+```sh
 # Provide SOPS the path towards the age key
 export SOPS_AGE_KEY_FILE=$PWD/key.txt
 
@@ -356,7 +357,7 @@ We can now reference the *secrets.yaml* file in the Helmfile definition of an ap
 
 Note: Helmfile tries to decrypt the content of properties in files defined under the *secrets* property of a release
 
-```
+```yaml
 releases:
   - name: myapp
     namespace: myapp
@@ -368,9 +369,9 @@ releases:
       - secrets.yaml <- Helmfile considers encrypted values are provided
 ```
 
-As the age key is given to the ArgoCD's helmfile plugin, each time the above application needs to be deployed / updated the plugin will be able to use this key to decrypt the properties first.
+As the `age` key is given to the Argo CD's helmfile plugin, each time the above application needs to be deployed / updated the plugin will be able to use this key to decrypt the properties first.
 
-Note: *age* is one of the encryption method that is supported by SOPS (and thus by Helmfile). Other encryption methods exist but they are not taken into account in this plugin.
+Note: `age` is one of the encryption method that is supported by SOPS (and thus by Helmfile). Other encryption methods exist, but they are not taken into account in this plugin.
 
 ## Status
 

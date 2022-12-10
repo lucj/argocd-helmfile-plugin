@@ -31,7 +31,7 @@ curl -sSLO https://github.com/helmfile/helmfile/releases/download/v0.148.1/helmf
 tar zxvf helmfile_0.148.1_${OS}_$ARCH.tar.gz
 sudo mv ./helmfile /usr/local/bin/
 
-# Age
+# (Optional) Age
 curl -sSLO https://github.com/FiloSottile/age/releases/download/v1.0.0/age-v1.0.0-$OS-$ARCH.tar.gz
 tar zxvf age-v1.0.0-$OS-$ARCH.tar.gz
 sudo mv ./age/age /usr/local/bin/

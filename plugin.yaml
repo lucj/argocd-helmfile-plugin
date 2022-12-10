@@ -10,11 +10,49 @@ spec:
       - "-c"
       - |
         if [[ -v ENV_NAME ]]; then
-          helmfile -e $ENV_NAME template --include-crds -q
-        elif [[ -v ARGOCD_ENV_ENV_NAME ]]; then
+          helmfile -e "$ENV_NAME" template --include-crds -q
+        elif [[ -v "ARGOCD_ENV_ENV_NAME" ]]; then
           helmfile -e "$ARGOCD_ENV_ENV_NAME" template --include-crds -q
         else
           helmfile template --include-crds -q
         fi
   discover:
     fileName: "./helmfile.yaml"
+  parameters:
+    dynamic:
+      command:
+        - bash
+        - -c
+        - |
+          #!/bin/bash
+          
+          temp_dir="$(mktemp -d)"
+          
+          get_params() {
+            # Get the paths of the values files aned the corresponding chart names.
+            releases=$(yq -o=json helmfile.yaml | jq --compact-output '.releases[] | {name: .name, path: "\(.namespace)/\(.name)/\(.chart)/\(.version)/\(.chart | split("/") | .[1])/values.yaml"}')
+            echo "$releases" | while read -r release; do
+              name=$(echo "$release" | jq -r '.name')
+              path=$(echo "$release" | jq -r '.path')
+            
+              # Convert the values file to the format Argo CD expects.
+              yq e '... comments=""' -o=p "$temp_dir/$path" | jq --arg name "$name" --compact-output --slurp --raw-input '
+                {
+                  name: "\($name)-helm-parameters",
+                  title: "\($name) Helm Parameters",
+                  tooltip: "Parameters to override when generating manifests with Helm",
+                  collectionType: "map",
+                  map: (. | split("\n") | map(select(. != "") | capture("(?<key>.*) = (?<value>.*)")) | from_entries)
+                }'
+            done
+          }
+        
+          # Download dependencies so we can read their values files.
+          helmfile fetch --output-dir "$temp_dir" 1>&2 # Redirect stdout to stderr so it's not parsed as JSON.
+          
+          params=$(get_params)
+          
+          # get_params produces single-line JSON objects, so we need to wrap them in an array.
+          echo "$params" | jq --slurp
+          
+          rm -r "$temp_dir"

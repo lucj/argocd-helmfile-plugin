@@ -10,9 +10,17 @@ RUN set -eux; \
     groupadd --gid 999 argocd; \
     useradd --uid 999 --gid argocd -m argocd;
 
-# Install couple of useful packages
-RUN apt-get update  --allow-insecure-repositories --allow-unauthenticated && \
+# install add-apt-repository
+RUN apt-get update && \
+    apt-get install -y software-properties-common && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN add-apt-repository ppa:rmescandon/yq
+
+RUN apt-get update --allow-insecure-repositories --allow-unauthenticated && \
     apt-get install -y \
+    yq \
+    jq \
     git \
     curl \
     gpg && \

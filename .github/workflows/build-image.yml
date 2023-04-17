@@ -33,7 +33,6 @@ jobs:
 
       - name: Build and push image
         run: |
-          IMAGE_ID=${{ secrets.DOCKERHUB_USERNAME }}/$IMAGE_NAME:${{github.ref_name}}
-          docker buildx build --push --platform linux/amd64,linux/arm64/v8 --tag $IMAGE_ID .
-          docker image tag $IMAGE_ID ${{ secrets.DOCKERHUB_USERNAME }}/$IMAGE_NAME:latest 
-          docker image push ${{ secrets.DOCKERHUB_USERNAME }}/$IMAGE_NAME:latest
+          IMAGE_WITH_TAG=${{ secrets.DOCKERHUB_USERNAME }}/$IMAGE_NAME:${{github.ref_name}}
+          IMAGE_LATEST=${{ secrets.DOCKERHUB_USERNAME }}/$IMAGE_NAME:latest
+          docker buildx build --push --platform linux/amd64,linux/arm64/v8 --tag $IMAGE_WITH_TAG --tag $IMAGE_LATEST .

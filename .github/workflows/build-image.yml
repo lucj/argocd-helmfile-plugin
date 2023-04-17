@@ -29,3 +29,5 @@ jobs:
         run: |
           IMAGE_ID=${{ secrets.DOCKERHUB_USERNAME }}/$IMAGE_NAME:${{github.ref_name}}
           docker push $IMAGE_ID
+          docker image tag $IMAGE_ID ${{ secrets.DOCKERHUB_USERNAME }}/$IMAGE_NAME:latest 
+          docker image push {{ secrets.DOCKERHUB_USERNAME }}/$IMAGE_NAME:latest

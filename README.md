@@ -51,7 +51,7 @@ There are currently 2 installation options in this repo:
 If you do not want to use a private key to encrypt sensitive properties in the values files you can use the following command  which installs ArgoCD + the helmfile plugin using Helmfile:
 
 ```
-cat <<EOF > helmfile.yaml
+cat <<EOF | helmfile apply -f -
 repositories:
   - name: argo
     url: https://argoproj.github.io/argo-helm
@@ -62,7 +62,7 @@ releases:
     labels:
       app: argocd
     chart: argo/argo-cd
-    version: ~5.14.1
+    version: ~5.28.2
     values:
     - repoServer:
         extraContainers:
@@ -80,25 +80,72 @@ releases:
 EOF
 ```
 
-and deploy it into the cluster:
-
-```sh
-helmfile apply
-```
-
 #### With an `age` key file
 
-If you want to use a private key to encrypt sensitive properties in the values files you can install Argo CD from the [*installation*](./installation) folder:
+If you want to use a private key to encrypt sensitive properties in the values files you can install Argo CD as follows. This will create an age key in *key.txt* of use the one already present. 
 
 ```
-# Clone the repo
-git clone https://github.com/lucj/argocd-helmfile-plugin
+cat <<EOF | helmfile apply -f -
+repositories:
+  - name: argo
+    url: https://argoproj.github.io/argo-helm
 
-# Go into the installation folder
-cd argocd-helmfile-plugin/installation/
+releases:
+  - name: argocd
+    namespace: argocd
+    labels:
+      app: argocd
+    chart: argo/argo-cd
+    version: ~5.28.2
+    values:
+      - repoServer:
+          volumes:
+            - name: age
+              secret:
+                secretName: age
+          extraContainers:
+          - name: plugin
+            image: lucj/argocd-plugin-helmfile:v0.0.10
+            command: ["/var/run/argocd/argocd-cmp-server"]
+            securityContext:
+              runAsNonRoot: true
+              runAsUser: 999
+            env:
+            - name: SOPS_AGE_KEY_FILE
+              value: /app/config/age/key.txt
+            volumeMounts:
+            - name: age
+              mountPath: "/app/config/age/"
+            - mountPath: /var/run/argocd
+              name: var-files
+            - mountPath: /home/argocd/cmp-server/plugins
+              name: plugins
+    hooks:
+    - events: ["presync"]
+      showlogs: true
+      command: "/bin/bash"
+      args:
+      - "-ec"
+      - |
+        # Create a sops / age secret key if none already exists
+        if [[ -f ./key.txt ]]; then
+          echo "age key.txt file already exists"
+        else
+          age-keygen > ./key.txt
+        fi
 
-# Install the whole thing
-helmfile apply
+        # Create secret to give Argo access to the age key
+        kubectl create ns argocd || true
+        kubectl -n argocd create secret generic age --from-file=key.txt=./key.txt || true
+    - events: ["postuninstall"]
+      showlogs: true
+      command: "/bin/bash"
+      args:
+      - "-ec"
+      - |
+        # Remove secret created in the presync hook
+        kubectl -n argocd delete secret age
+EOF
 ```
 
 That's it, you can now go directly into the [*Usage*](#usage) step.

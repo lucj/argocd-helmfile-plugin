@@ -1,6 +1,6 @@
 ## Purpose
 
-This plugin allows [Argo CD](https://github.com/argoproj/argo-cd) to manage applications defined using [Helmfile](https://github.com/helmfile/helmfile).
+This plugin allows [Argo CD](https://github.com/argoproj/argo-cd) to manage applications defined with [Helmfile](https://github.com/helmfile/helmfile).
 
 ## Prerequisite
 
@@ -51,7 +51,7 @@ There are currently 2 installation options in this repo:
 
 #### Without `age` key file
 
-If you do not want to use a private key to encrypt sensitive properties in the values files you can use the following command  which installs ArgoCD + the helmfile plugin using Helmfile:
+If you do not want to use a private key to encrypt sensitive properties in the values files you can use the following command which installs ArgoCD + the helmfile plugin using *helmfile* binary:
 
 ```
 cat <<EOF | helmfile apply -f -
@@ -280,7 +280,7 @@ repoServer:
 The update can be done using the following command (if Argo CD was installed directly with helm):
 
 ```
-helm upgrade --install --create-namespace -n argocd argo-cd argo/argo-cd --version 5.12.3 -f values.yaml
+helm upgrade --install --create-namespace -n argocd argo-cd argo/argo-cd --version 5.29.1 -f values.yaml
 ```
 
 Or with this command (if Argo CD was installed with Helmfile):

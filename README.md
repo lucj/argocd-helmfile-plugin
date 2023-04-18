@@ -19,21 +19,24 @@ OS=linux     # change to match your current os (linux / darwin)
 ARCH=amd64   # change to match your current architecture (amd64 / arm64)
 
 # Helm
-curl -sSLO https://get.helm.sh/helm-v3.10.2-$OS-$ARCH.tar.gz
-tar zxvf helm-v3.10.2-$OS-$ARCH.tar.gz
+HELM_VERSION=v3.11.1
+curl -sSLO https://get.helm.sh/helm-${HELM_VERSION}-$OS-$ARCH.tar.gz
+tar zxvf helm-${HELM_VERSION}-$OS-$ARCH.tar.gz
 sudo mv ./$OS-$ARCH/helm /usr/local/bin
 
 # Helm-diff
 helm plugin install https://github.com/databus23/helm-diff
 
 # Helmfile
-curl -sSLO https://github.com/helmfile/helmfile/releases/download/v0.148.1/helmfile_0.148.1_${OS}_$ARCH.tar.gz
-tar zxvf helmfile_0.148.1_${OS}_$ARCH.tar.gz
+HELMFILE_VERSION=0.152.0
+curl -sSLO https://github.com/helmfile/helmfile/releases/download/v${HELMFILE_VERSION}/helmfile_${HELMFILE_VERSION}_${OS}_$ARCH.tar.gz
+tar zxvf helmfile_${HELMFILE_VERSION}_${OS}_$ARCH.tar.gz
 sudo mv ./helmfile /usr/local/bin/
 
 # Age
-curl -sSLO https://github.com/FiloSottile/age/releases/download/v1.0.0/age-v1.0.0-$OS-$ARCH.tar.gz
-tar zxvf age-v1.0.0-$OS-$ARCH.tar.gz
+AGE_VERSION=v1.1.1
+curl -sSLO https://github.com/FiloSottile/age/releases/download/${AGE_VERSION}/age-${AGE_VERSION}-$OS-$ARCH.tar.gz
+tar zxvf age-${AGE_VERSION}-$OS-$ARCH.tar.gz
 sudo mv ./age/age /usr/local/bin/
 sudo mv ./age/age-keygen /usr/local/bin/
 ```
@@ -62,7 +65,7 @@ releases:
     labels:
       app: argocd
     chart: argo/argo-cd
-    version: ~5.28.2
+    version: ~5.29.1
     values:
     - repoServer:
         extraContainers:
@@ -96,7 +99,7 @@ releases:
     labels:
       app: argocd
     chart: argo/argo-cd
-    version: ~5.28.2
+    version: ~5.29.1
     values:
       - repoServer:
           volumes:
@@ -163,7 +166,7 @@ Using the following helm commands:
 ```sh
 helm repo add argo https://argoproj.github.io/argo-helm
 
-helm upgrade --install --create-namespace -n argocd argo-cd argo/argo-cd --version 5.14.1
+helm upgrade --install --create-namespace -n argocd argo-cd argo/argo-cd --version 5.29.1
 ```
 
 - Second option:
@@ -181,7 +184,7 @@ releases:
     labels:
       app: argocd
     chart: argo/argo-cd
-    version: ~5.14.1
+    version: ~5.29.1
 ```
 
 then run the following command:

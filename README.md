@@ -108,7 +108,7 @@ releases:
                 secretName: age
           extraContainers:
           - name: plugin
-            image: lucj/argocd-plugin-helmfile:v0.0.10
+            image: lucj/argocd-plugin-helmfile
             command: ["/var/run/argocd/argocd-cmp-server"]
             securityContext:
               runAsNonRoot: true

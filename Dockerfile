@@ -2,9 +2,9 @@ FROM ubuntu:22.04
 
 ARG SOPS_VERSION="v3.7.3"
 ARG AGE_VERSION="v1.1.1"
-ARG HELM_VERSION="v3.11.1"
+ARG HELM_VERSION="v3.12.0"
 ARG HELM_SECRETS_VERSION="4.4.2"
-ARG HELMFILE_VERSION="0.152.0" 
+ARG HELMFILE_VERSION="0.154.0" 
 
 RUN set -eux; \
     groupadd --gid 999 argocd; \
@@ -19,7 +19,7 @@ RUN apt-get update  --allow-insecure-repositories --allow-unauthenticated && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# Install plugin related binary (sops, age, helm, helmfile)
+# Install plugin related binary (sops, age, helm, helmfile, kubectl)
 COPY helm-wrapper.sh /usr/local/bin/helm
 RUN OS=$(uname | tr '[:upper:]' '[:lower:]') && \
     ARCH=$(uname -m | sed -e 's/x86_64/amd64/' -e 's/\(arm\)\(64\)\?.*/\1\2/' -e 's/aarch64$/arm64/') && \
@@ -37,7 +37,11 @@ RUN OS=$(uname | tr '[:upper:]' '[:lower:]') && \
     tar zxvf "helmfile_${HELMFILE_VERSION}_${OS}_${ARCH}.tar.gz" && \
     mv ./helmfile /usr/local/bin/ && \
     rm -f helmfile_${HELMFILE_VERSION}_${OS}_${ARCH}.tar.gz README.md LICENSE && \
-    chmod +x /usr/local/bin/helm
+    chmod +x /usr/local/bin/helm && \
+    curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && \
+    chmod +x ./kubectl && \
+    mv ./kubectl /usr/local/bin/kubectl
+
 
 # Installing helm's helm-secrets plugin (this one is used by helmfile)
 USER 999

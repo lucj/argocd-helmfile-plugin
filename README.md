@@ -65,7 +65,7 @@ releases:
     labels:
       app: argocd
     chart: argo/argo-cd
-    version: ~5.29.1
+    version: ~5.34.6
     values:
     - repoServer:
         extraContainers:
@@ -99,7 +99,7 @@ releases:
     labels:
       app: argocd
     chart: argo/argo-cd
-    version: ~5.29.1
+    version: ~5.34.6
     values:
       - repoServer:
           volumes:
@@ -166,7 +166,7 @@ Using the following helm commands:
 ```sh
 helm repo add argo https://argoproj.github.io/argo-helm
 
-helm upgrade --install --create-namespace -n argocd argo-cd argo/argo-cd --version 5.29.1
+helm upgrade --install --create-namespace -n argocd argo-cd argo/argo-cd --version 5.34.6
 ```
 
 - Second option:
@@ -184,7 +184,7 @@ releases:
     labels:
       app: argocd
     chart: argo/argo-cd
-    version: ~5.29.1
+    version: ~5.34.6
 ```
 
 then run the following command:
@@ -280,7 +280,7 @@ repoServer:
 The update can be done using the following command (if Argo CD was installed directly with helm):
 
 ```
-helm upgrade --install --create-namespace -n argocd argo-cd argo/argo-cd --version 5.29.1 -f values.yaml
+helm upgrade --install --create-namespace -n argocd argo-cd argo/argo-cd --version 5.34.6 -f values.yaml
 ```
 
 Or with this command (if Argo CD was installed with Helmfile):

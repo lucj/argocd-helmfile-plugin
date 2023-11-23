@@ -1,10 +1,11 @@
 FROM ubuntu:22.04
 
-ARG SOPS_VERSION="v3.7.3"
+ARG SOPS_VERSION="v3.8.1"
 ARG AGE_VERSION="v1.1.1"
-ARG HELM_VERSION="v3.12.0"
-ARG HELM_SECRETS_VERSION="4.4.2"
-ARG HELMFILE_VERSION="0.154.0" 
+ARG HELM_VERSION="v3.13.2"
+ARG HELM_SECRETS_VERSION="4.5.1"
+ARG HELMFILE_VERSION="0.158.1" 
+ARG KUBECTL_VERSION="v1.28.4"
 
 RUN set -eux; \
     groupadd --gid 999 argocd; \
@@ -38,7 +39,7 @@ RUN OS=$(uname | tr '[:upper:]' '[:lower:]') && \
     mv ./helmfile /usr/local/bin/ && \
     rm -f helmfile_${HELMFILE_VERSION}_${OS}_${ARCH}.tar.gz README.md LICENSE && \
     chmod +x /usr/local/bin/helm && \
-    curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && \
+    curl -LO "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl" && \
     chmod +x ./kubectl && \
     mv ./kubectl /usr/local/bin/kubectl
 

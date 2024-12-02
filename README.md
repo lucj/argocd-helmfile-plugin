@@ -7,6 +7,7 @@ This plugin allows [Argo CD](https://github.com/argoproj/argo-cd) to manage appl
 In order to test this plugin you need a Kubernetes cluster (it can even be a local k3s cluster running on a multipass VM). Also, make sure you have:
 - Helm ([https://github.com/helm/helm/releases](https://github.com/helm/helm/releases))
 - helm-diff plugin ([https://github.com/databus23/helm-diff](https://github.com/databus23/helm-diff))
+- helm-git plugin ([https://github.com/aslafy-z/helm-git](https://github.com/aslafy-z/helm-git))
 - Helmfile ([https://github.com/helmfile/helmfile#installation](https://github.com/helmfile/helmfile#installation))
 - age ([https://github.com/FiloSottile/age](https://github.com/FiloSottile/age))
 

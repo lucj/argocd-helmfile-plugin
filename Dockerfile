@@ -2,9 +2,10 @@ FROM ubuntu:22.04
 
 ARG SOPS_VERSION="v3.8.1"
 ARG AGE_VERSION="v1.1.1"
-ARG HELM_VERSION="v3.13.2"
+ARG HELM_VERSION="v3.16.3"
 ARG HELM_SECRETS_VERSION="4.5.1"
-ARG HELMFILE_VERSION="0.158.1" 
+ARG HELM_GIT_VERSION="v1.3.0"
+ARG HELMFILE_VERSION="0.169.1"
 ARG KUBECTL_VERSION="v1.28.4"
 
 RUN set -eux; \
@@ -46,7 +47,8 @@ RUN OS=$(uname | tr '[:upper:]' '[:lower:]') && \
 
 # Installing helm's helm-secrets plugin (this one is used by helmfile)
 USER 999
-RUN /usr/local/bin/helm.bin plugin install https://github.com/jkroepke/helm-secrets --version ${HELM_SECRETS_VERSION}
+RUN /usr/local/bin/helm.bin plugin install https://github.com/jkroepke/helm-secrets --version ${HELM_SECRETS_VERSION} && \
+    /usr/local/bin/helm.bin plugin install https://github.com/aslafy-z/helm-git --version ${HELM_GIT_VERSION}
 ENV HELM_PLUGINS="/home/argocd/.local/share/helm/plugins/"
 
 # ArgoCD plugin definition

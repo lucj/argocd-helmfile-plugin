@@ -276,6 +276,16 @@ repoServer:
       name: plugins
 ```
 
+- if an environment needs to be passed to `helmfile`
+```yaml
+repoServer:
+  extraContainers:
+    - name: plugin
+      env:
+        - name: ENV_NAME
+          value: '{{metadata.labels.ENV_NAME}}' # or whatever env name as needed
+```
+
 - update Argo CD so it takes into account the new values and then the new helmfile plugin
 
 The update can be done using the following command (if Argo CD was installed directly with helm):
